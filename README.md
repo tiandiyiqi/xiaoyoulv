@@ -1,4 +1,4 @@
-# uni-app-module
+# 玄鉴校友录
 
 基于 uni-app + Vue3 + TypeScript + Vite + Pinia 的跨平台应用项目。
 
