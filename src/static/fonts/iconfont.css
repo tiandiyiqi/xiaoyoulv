@@ -1,0 +1,172 @@
+@font-face {
+  font-family: "iconfont";
+  src: url('iconfont.ttf') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-like:before {
+  content: "\e8ad";
+}
+
+.icon-comment:before {
+  content: "\e8b9";
+}
+
+.icon-share:before {
+  content: "\e8b0";
+}
+
+.icon-add:before {
+  content: "\e8c0";
+}
+
+.icon-location:before {
+  content: "\e8bb";
+}
+
+.icon-user:before {
+  content: "\e8c8";
+}
+
+.icon-activity:before {
+  content: "\e8b1";
+}
+
+.icon-resource:before {
+  content: "\e8ba";
+}
+
+.icon-search:before {
+  content: "\e8b4";
+}
+
+.icon-edit:before {
+  content: "\e8ac";
+}
+
+.icon-delete:before {
+  content: "\e8b2";
+}
+
+.icon-settings:before {
+  content: "\e8b8";
+}
+
+.icon-message:before {
+  content: "\e8bd";
+}
+
+.icon-notification:before {
+  content: "\e8c1";
+}
+
+.icon-camera:before {
+  content: "\e8bc";
+}
+
+.icon-image:before {
+  content: "\e8be";
+}
+
+.icon-video:before {
+  content: "\e8bf";
+}
+
+.icon-close:before {
+  content: "\e8b3";
+}
+
+.icon-check:before {
+  content: "\e8b5";
+}
+
+.icon-arrow-right:before {
+  content: "\e8b6";
+}
+
+.icon-arrow-left:before {
+  content: "\e8b7";
+}
+
+.icon-lock:before {
+  content: "\e8c2";
+}
+
+.icon-eye:before {
+  content: "\e8c3";
+}
+
+.icon-eye-close:before {
+  content: "\e8c4";
+}
+
+.icon-weixin:before {
+  content: "\e8c5";
+}
+
+.icon-qq:before {
+  content: "\e8c6";
+}
+
+.icon-alipay:before {
+  content: "\e8c7";
+}
+
+.icon-education:before {
+  content: "\e8c9";
+}
+
+.icon-work:before {
+  content: "\e8ca";
+}
+
+.icon-topic:before {
+  content: "\e8cb";
+}
+
+.icon-visibility:before {
+  content: "\e8cc";
+}
+
+.icon-filter:before {
+  content: "\e8cd";
+}
+
+.icon-company:before {
+  content: "\e8ce";
+}
+
+.icon-time:before {
+  content: "\e8cf";
+}
+
+.icon-money:before {
+  content: "\e8d0";
+}
+
+.icon-phone:before {
+  content: "\e8d1";
+}
+
+.icon-view:before {
+  content: "\e8d2";
+}
+
+.icon-file:before {
+  content: "\e8d3";
+}
+
+.icon-upload:before {
+  content: "\e8d4";
+}
+
+.icon-project:before {
+  content: "\e8d5";
+} 
