@@ -1,4 +1,4 @@
-import { resourceApi } from 'mock';
+import { resourceApi } from '@/mock';
 
 export interface Resource {
   id: string;

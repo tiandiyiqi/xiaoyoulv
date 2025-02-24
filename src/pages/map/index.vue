@@ -18,33 +18,71 @@
       </view>
     </view>
 
-    <map
-      class="map-container"
-      :latitude="mapState.latitude"
-      :longitude="mapState.longitude"
-      :markers="markers"
-      :scale="mapState.scale"
-      :show-location="true"
-      @markertap="handleMarkerTap"
-      @regionchange="handleRegionChange"
-    ></map>
+    <view class="map-container">
+      <map
+        id="map"
+        :latitude="mapState.latitude"
+        :longitude="mapState.longitude"
+        :markers="markers"
+        :scale="mapState.scale"
+        :show-location="true"
+        :enable-poi="true"
+        :enable-traffic="false"
+        :enable-satellite="false"
+        :enable-3D="false"
+        @markertap="handleMarkerTap"
+        @regionchange="handleRegionChange"
+      ></map>
+    </view>
 
-    <view class="toolbar">
-      <view class="tool-item" @tap="handleLocateUser">
-        <text class="iconfont icon-location"></text>
-        <text class="label">定位</text>
+    <view class="marker-selector">
+      <view
+        class="marker-item"
+        :class="{ active: activeMarker === 'location' }"
+        @tap="handleLocateUser"
+      >
+        <image
+          class="marker-icon"
+          src="/static/markers/default.svg"
+          mode="aspectFit"
+        />
+        <text class="marker-text">定位</text>
       </view>
-      <view class="tool-item" @tap="handleShowAlumni">
-        <text class="iconfont icon-user"></text>
-        <text class="label">校友</text>
+      <view
+        class="marker-item"
+        :class="{ active: activeMarker === 'alumni' }"
+        @tap="handleShowAlumni"
+      >
+        <image
+          class="marker-icon"
+          src="/static/markers/alumni.svg"
+          mode="aspectFit"
+        />
+        <text class="marker-text">校友</text>
       </view>
-      <view class="tool-item" @tap="handleShowCompany">
-        <text class="iconfont icon-company"></text>
-        <text class="label">企业</text>
+      <view
+        class="marker-item"
+        :class="{ active: activeMarker === 'company' }"
+        @tap="handleShowCompany"
+      >
+        <image
+          class="marker-icon"
+          src="/static/markers/company.svg"
+          mode="aspectFit"
+        />
+        <text class="marker-text">企业</text>
       </view>
-      <view class="tool-item" @tap="handleShowActivity">
-        <text class="iconfont icon-activity"></text>
-        <text class="label">活动</text>
+      <view
+        class="marker-item"
+        :class="{ active: activeMarker === 'activity' }"
+        @tap="handleShowActivity"
+      >
+        <image
+          class="marker-icon"
+          src="/static/markers/activity.svg"
+          mode="aspectFit"
+        />
+        <text class="marker-text">活动</text>
       </view>
     </view>
   </view>
@@ -54,9 +92,13 @@
 import { ref, reactive, onMounted } from "vue";
 import { useUserStore } from "@/stores/user";
 import { MAP_CONFIG } from "@/config";
+import { getLocation } from "@/utils/location";
 
 // 用户状态管理
 const userStore = useUserStore();
+
+// 地图上下文
+const mapContext = ref<any>(null);
 
 // 搜索关键词
 const keyword = ref("");
@@ -74,12 +116,90 @@ const markers = ref([
     id: 1,
     latitude: 22.54286,
     longitude: 114.05956,
-    title: "张三",
-    iconPath: "/static/markers/alumni.png",
-    width: 32,
-    height: 32,
+    title: "陈明宇",
+    iconPath: "/static/markers/alumni.svg",
+    width: 40,
+    height: 40,
+    anchor: {
+      x: 0.5,
+      y: 1,
+    },
+    label: {
+      content: "陈明宇",
+      color: "#333",
+      fontSize: 12,
+      bgColor: "#fff",
+      padding: 3,
+      borderRadius: 4,
+      anchorX: 0,
+      anchorY: -45,
+    },
+    customCallout: {
+      display: "ALWAYS",
+      anchorX: 0,
+      anchorY: 0,
+    },
+  },
+  {
+    id: 2,
+    latitude: 22.53286,
+    longitude: 114.06956,
+    title: "王思远",
+    iconPath: "/static/markers/alumni.svg",
+    width: 40,
+    height: 40,
+    anchor: {
+      x: 0.5,
+      y: 1,
+    },
+    label: {
+      content: "王思远",
+      color: "#333",
+      fontSize: 12,
+      bgColor: "#fff",
+      padding: 3,
+      borderRadius: 4,
+      anchorX: 0,
+      anchorY: -45,
+    },
+    customCallout: {
+      display: "ALWAYS",
+      anchorX: 0,
+      anchorY: 0,
+    },
+  },
+  {
+    id: 3,
+    latitude: 22.55286,
+    longitude: 114.04956,
+    title: "林雨晴",
+    iconPath: "/static/markers/alumni.svg",
+    width: 40,
+    height: 40,
+    anchor: {
+      x: 0.5,
+      y: 1,
+    },
+    label: {
+      content: "林雨晴",
+      color: "#333",
+      fontSize: 12,
+      bgColor: "#fff",
+      padding: 3,
+      borderRadius: 4,
+      anchorX: 0,
+      anchorY: -45,
+    },
+    customCallout: {
+      display: "ALWAYS",
+      anchorX: 0,
+      anchorY: 0,
+    },
   },
 ]);
+
+// 当前激活的标记类型
+const activeMarker = ref("alumni");
 
 // 处理图片加载错误
 const handleImageError = (e: any) => {
@@ -100,20 +220,8 @@ const handleImageError = (e: any) => {
 
 // 初始化地图SDK
 const initMapSDK = () => {
-  // #ifdef MP-WEIXIN
-  // 微信小程序
-  uni.loadMapSdk({
-    key: MAP_CONFIG.WX_MAP_KEY,
-  });
-  // #endif
-
-  // #ifdef APP-PLUS
-  // App端
-  uni.loadMapSdk({
-    key: MAP_CONFIG.AMAP_KEY,
-    platform: "amap",
-  });
-  // #endif
+  // 获取用户位置
+  handleLocateUser();
 };
 
 // 搜索
@@ -152,56 +260,206 @@ const handleRegionChange = (e: any) => {
   console.log("地图区域变化", e);
 };
 
+// 移动地图到指定位置
+const moveToLocation = (latitude: number, longitude: number) => {
+  if (!mapContext.value) {
+    mapContext.value = uni.createMapContext("map");
+  }
+
+  mapContext.value.moveToLocation({
+    latitude,
+    longitude,
+    success: () => {
+      console.log("地图移动成功");
+    },
+    fail: (error: any) => {
+      console.error("地图移动失败:", error);
+    },
+  });
+};
+
 // 定位用户
 const handleLocateUser = () => {
+  activeMarker.value = "location";
+  // 显示加载提示
+  uni.showLoading({
+    title: "定位中...",
+  });
+
+  // 先尝试使用 uni-app 的定位 API
   uni.getLocation({
     type: "gcj02",
-    success: (res) => {
-      mapState.latitude = res.latitude;
-      mapState.longitude = res.longitude;
-      mapState.scale = 14;
+    isHighAccuracy: true,
+    success: (res: UniApp.GetLocationSuccess) => {
+      console.log("定位成功:", res);
+      if (
+        typeof res.latitude === "number" &&
+        typeof res.longitude === "number"
+      ) {
+        // 更新地图中心点
+        mapState.latitude = res.latitude;
+        mapState.longitude = res.longitude;
+        mapState.scale = 14;
+
+        // 移动地图到当前位置
+        moveToLocation(res.latitude, res.longitude);
+
+        // 添加当前位置标记
+        const currentLocationMarker = {
+          id: 0,
+          latitude: res.latitude,
+          longitude: res.longitude,
+          title: "当前位置",
+          iconPath: "/static/markers/default.svg",
+          width: 40,
+          height: 40,
+          anchor: {
+            x: 0.5,
+            y: 1,
+          },
+          label: {
+            content: "当前位置",
+            color: "#333",
+            fontSize: 12,
+            bgColor: "#fff",
+            padding: 3,
+            borderRadius: 4,
+            anchorX: 0,
+            anchorY: -45,
+          },
+          customCallout: {
+            display: "ALWAYS",
+            anchorX: 0,
+            anchorY: 0,
+          },
+        };
+
+        // 更新标记点列表
+        markers.value = [
+          currentLocationMarker,
+          ...markers.value.filter((m) => m.id !== 0),
+        ];
+
+        // 隐藏加载提示
+        uni.hideLoading();
+      }
     },
-    fail: () => {
-      uni.showToast({
-        title: "获取位置失败",
-        icon: "none",
-      });
+    fail: (error) => {
+      console.error("uni-app定位失败:", error);
+      // 如果uni-app定位失败，尝试使用浏览器定位
+      if (typeof navigator !== "undefined" && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log("浏览器定位成功:", position);
+            mapState.latitude = position.coords.latitude;
+            mapState.longitude = position.coords.longitude;
+            mapState.scale = 14;
+
+            // 添加当前位置标记
+            const currentLocationMarker = {
+              id: 0,
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              title: "当前位置",
+              iconPath: "/static/markers/default.svg",
+              width: 40,
+              height: 40,
+              anchor: {
+                x: 0.5,
+                y: 1,
+              },
+              label: {
+                content: "当前位置",
+                color: "#333",
+                fontSize: 12,
+                bgColor: "#fff",
+                padding: 3,
+                borderRadius: 4,
+                anchorX: 0,
+                anchorY: -45,
+              },
+              customCallout: {
+                display: "ALWAYS",
+                anchorX: 0,
+                anchorY: 0,
+              },
+            };
+
+            // 更新标记点列表
+            markers.value = [
+              currentLocationMarker,
+              ...markers.value.filter((m) => m.id !== 0),
+            ];
+
+            // 隐藏加载提示
+            uni.hideLoading();
+          },
+          (error) => {
+            console.error("浏览器定位失败:", error);
+            uni.showModal({
+              title: "提示",
+              content: "获取位置失败，请确保已允许浏览器获取位置权限",
+              showCancel: false,
+            });
+            // 隐藏加载提示
+            uni.hideLoading();
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0,
+          }
+        );
+      } else {
+        // 隐藏加载提示
+        uni.hideLoading();
+      }
     },
   });
 };
 
 // 显示校友
 const handleShowAlumni = () => {
-  // TODO: 加载并显示校友标记点
-  uni.showToast({
-    title: "校友标记功能开发中",
-    icon: "none",
-  });
+  activeMarker.value = "alumni";
+  // 更新所有标记点为校友图标
+  markers.value = markers.value.map((marker) => ({
+    ...marker,
+    iconPath:
+      marker.id === 0
+        ? "/static/markers/default.svg"
+        : "/static/markers/alumni.svg",
+  }));
 };
 
 // 显示企业
 const handleShowCompany = () => {
-  // TODO: 加载并显示企业标记点
-  uni.showToast({
-    title: "企业标记功能开发中",
-    icon: "none",
-  });
+  activeMarker.value = "company";
+  // 更新所有标记点为企业图标
+  markers.value = markers.value.map((marker) => ({
+    ...marker,
+    iconPath:
+      marker.id === 0
+        ? "/static/markers/default.svg"
+        : "/static/markers/company.svg",
+  }));
 };
 
 // 显示活动
 const handleShowActivity = () => {
-  // TODO: 加载并显示活动标记点
-  uni.showToast({
-    title: "活动标记功能开发中",
-    icon: "none",
-  });
+  activeMarker.value = "activity";
+  // 更新所有标记点为活动图标
+  markers.value = markers.value.map((marker) => ({
+    ...marker,
+    iconPath:
+      marker.id === 0
+        ? "/static/markers/default.svg"
+        : "/static/markers/activity.svg",
+  }));
 };
 
 onMounted(() => {
   // 初始化地图SDK
   initMapSDK();
-  // 获取用户位置
-  handleLocateUser();
 });
 </script>
 
@@ -275,37 +533,52 @@ onMounted(() => {
   .map-container {
     width: 100%;
     height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    map {
+      width: 100%;
+      height: 100%;
+    }
   }
 
-  .toolbar {
+  .marker-selector {
     position: absolute;
     right: 30rpx;
-    bottom: 160rpx;
+    bottom: 200rpx;
     z-index: 1;
     background-color: #fff;
     border-radius: 16rpx;
     padding: 20rpx;
     box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20rpx;
 
-    .tool-item {
+    .marker-item {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      margin-bottom: 30rpx;
+      padding: 10rpx;
+      border-radius: 8rpx;
+      transition: all 0.3s;
+      cursor: pointer;
 
-      &:last-child {
-        margin-bottom: 0;
+      &.active {
+        background-color: #e6f3ff;
       }
 
-      .iconfont {
-        font-size: 48rpx;
-        color: #666;
-        margin-bottom: 4rpx;
+      .marker-icon {
+        width: 40rpx;
+        height: 40rpx;
+        margin-right: 10rpx;
       }
 
-      .label {
-        font-size: 24rpx;
-        color: #666;
+      .marker-text {
+        font-size: 28rpx;
+        color: #333;
       }
     }
   }

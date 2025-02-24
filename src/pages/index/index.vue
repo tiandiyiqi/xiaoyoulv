@@ -2,7 +2,7 @@
 // index.vue
 import { ref, onMounted } from "vue";
 import { onPullDownRefresh, onReachBottom } from "@dcloudio/uni-app";
-import { postApi } from "mock";
+import { postApi } from "@/mock";
 
 interface Reply {
   id: string;

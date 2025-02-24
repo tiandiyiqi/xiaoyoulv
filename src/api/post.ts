@@ -1,4 +1,4 @@
-import { postApi } from 'mock';
+import { postApi } from '@/mock';
 
 export interface Post {
   id: string;

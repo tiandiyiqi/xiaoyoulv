@@ -1,4 +1,4 @@
-import { eventApi } from 'mock';
+import { eventApi } from '@/mock';
 
 export interface Event {
   id: string;

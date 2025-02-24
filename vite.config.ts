@@ -6,8 +6,7 @@ export default defineConfig({
   plugins: [uni()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
-      'mock': resolve(__dirname, 'mock'),
+      '@': resolve(__dirname, 'src')
     },
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
@@ -19,8 +18,11 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3000,
-    host: '0.0.0.0'
+    port: 3003,
+    host: '0.0.0.0',
+    fs: {
+      strict: false
+    }
   },
   build: {
     assetsDir: 'static',
@@ -31,6 +33,9 @@ export default defineConfig({
         assetFileNames: 'static/[ext]/[name]-[hash].[ext]'
       }
     }
+  },
+  optimizeDeps: {
+    exclude: ['@dcloudio/uni-ui']
   },
   publicDir: 'src/static'
 }) 
