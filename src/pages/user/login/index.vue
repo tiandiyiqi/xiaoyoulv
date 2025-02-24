@@ -57,15 +57,27 @@
 
       <view class="icons">
         <view class="icon-item" @tap="handleThirdPartyLogin('weixin')">
-          <text class="iconfont icon-weixin"></text>
+          <image
+            class="icon-img"
+            src="/static/images/wechat.jpeg"
+            mode="aspectFill"
+          />
           <text class="label">微信</text>
         </view>
         <view class="icon-item" @tap="handleThirdPartyLogin('qq')">
-          <text class="iconfont icon-qq"></text>
+          <image
+            class="icon-img"
+            src="/static/images/qq.jpg"
+            mode="aspectFill"
+          />
           <text class="label">QQ</text>
         </view>
         <view class="icon-item" @tap="handleThirdPartyLogin('alipay')">
-          <text class="iconfont icon-alipay"></text>
+          <image
+            class="icon-img"
+            src="/static/images/zfb.jpg"
+            mode="aspectFill"
+          />
           <text class="label">支付宝</text>
         </view>
       </view>
@@ -175,21 +187,21 @@ const handleThirdPartyLogin = (type: "weixin" | "qq" | "alipay") => {
     margin-bottom: 80rpx;
 
     .logo {
-      width: 160rpx;
-      height: 160rpx;
-      margin-bottom: 20rpx;
+      width: 320rpx;
+      height: 320rpx;
+      margin-bottom: 30rpx;
     }
 
     .title {
-      font-size: 40rpx;
+      font-size: 48rpx;
       font-weight: bold;
       color: #333;
-      margin-bottom: 10rpx;
+      margin-bottom: 16rpx;
     }
 
     .subtitle {
-      font-size: 28rpx;
-      color: #999;
+      font-size: 32rpx;
+      color: #666;
     }
   }
 
@@ -287,26 +299,16 @@ const handleThirdPartyLogin = (type: "weixin" | "qq" | "alipay") => {
         flex-direction: column;
         align-items: center;
 
-        .iconfont {
-          font-size: 80rpx;
+        .icon-img {
+          width: 80rpx;
+          height: 80rpx;
           margin-bottom: 10rpx;
-
-          &.icon-weixin {
-            color: #07c160;
-          }
-
-          &.icon-qq {
-            color: #12b7f5;
-          }
-
-          &.icon-alipay {
-            color: #1677ff;
-          }
+          border-radius: 50%;
         }
 
         .label {
           font-size: 24rpx;
-          color: #999;
+          color: #666;
         }
       }
     }

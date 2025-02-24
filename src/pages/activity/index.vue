@@ -70,6 +70,8 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useUserStore } from "@/stores/user";
+import { getEvents } from "@/api";
+import type { Event } from "@/api";
 
 // 用户状态管理
 const userStore = useUserStore();
@@ -78,31 +80,24 @@ const userStore = useUserStore();
 const keyword = ref("");
 
 // 活动列表
-const activities = ref([
-  {
-    id: "1",
-    title: "2024届校友聚会",
-    cover: "/static/images/activity1.jpg",
-    time: "2024-03-01 14:00",
-    location: "深圳市南山区",
-    participantCount: 128,
-    interestedCount: 256,
-    status: "upcoming" as "upcoming" | "ongoing" | "ended",
-  },
-]);
+const activities = ref<Event[]>([]);
 
 // 刷新状态
 const refreshing = ref(false);
 
 // 搜索
-const handleSearch = () => {
+const handleSearch = async () => {
   if (!keyword.value) return;
 
-  // TODO: 实现搜索功能
-  uni.showToast({
-    title: "搜索功能开发中",
-    icon: "none",
-  });
+  try {
+    const { data } = await getEvents({ keyword: keyword.value });
+    activities.value = data;
+  } catch (error) {
+    uni.showToast({
+      title: "搜索失败",
+      icon: "none",
+    });
+  }
 };
 
 // 显示筛选
@@ -114,7 +109,7 @@ const handleShowFilter = () => {
 };
 
 // 查看活动详情
-const handleViewActivity = (activity: any) => {
+const handleViewActivity = (activity: Event) => {
   uni.navigateTo({
     url: `/pages/activity/detail/index?id=${activity.id}`,
   });
@@ -137,20 +132,27 @@ const handleLoadMore = () => {
 };
 
 // 刷新
-const handleRefresh = () => {
+const handleRefresh = async () => {
   refreshing.value = true;
-  // TODO: 刷新数据
-  setTimeout(() => {
-    refreshing.value = false;
+  try {
+    const { data } = await getEvents();
+    activities.value = data;
     uni.showToast({
       title: "刷新成功",
       icon: "success",
     });
-  }, 1000);
+  } catch (error) {
+    uni.showToast({
+      title: "刷新失败",
+      icon: "none",
+    });
+  } finally {
+    refreshing.value = false;
+  }
 };
 
 // 获取状态文本
-const getStatusText = (status: "upcoming" | "ongoing" | "ended") => {
+const getStatusText = (status: Event["status"]) => {
   const statusMap = {
     upcoming: "即将开始",
     ongoing: "进行中",
@@ -159,8 +161,17 @@ const getStatusText = (status: "upcoming" | "ongoing" | "ended") => {
   return statusMap[status];
 };
 
-onMounted(() => {
-  // TODO: 获取活动列表
+onMounted(async () => {
+  try {
+    const { data } = await getEvents();
+    activities.value = data;
+  } catch (error) {
+    console.error("获取活动列表失败:", error);
+    uni.showToast({
+      title: "获取数据失败",
+      icon: "none",
+    });
+  }
 });
 </script>
 

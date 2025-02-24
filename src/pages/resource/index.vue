@@ -105,6 +105,8 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useUserStore } from "@/stores/user";
+import { getResources } from "@/api";
+import type { Resource } from "@/api";
 
 // 用户状态管理
 const userStore = useUserStore();
@@ -114,46 +116,35 @@ const keyword = ref("");
 
 // 分类列表
 const categories = [
-  { label: "全部", value: "all" },
-  { label: "求职招聘", value: "job" },
-  { label: "项目合作", value: "project" },
-  { label: "经验分享", value: "experience" },
-  { label: "资料文档", value: "document" },
-];
+  { label: "全部", value: "all" as const },
+  { label: "求职招聘", value: "job" as const },
+  { label: "项目合作", value: "project" as const },
+  { label: "经验分享", value: "experience" as const },
+  { label: "资料文档", value: "document" as const },
+] as const;
 
 // 当前分类
-const currentCategory = ref("all");
+const currentCategory = ref<Resource["type"] | "all">("all");
 
 // 资源列表
-const resources = ref([
-  {
-    id: "1",
-    nickname: "张三",
-    avatar: "/static/avatar/default.png",
-    createTime: "2024-02-23 14:30",
-    type: "job" as "job" | "project" | "experience" | "document",
-    title: "前端开发工程师",
-    description:
-      "我们正在寻找一位优秀的前端开发工程师加入我们的团队，负责公司核心产品的前端开发工作。",
-    tags: ["前端开发", "Vue3", "TypeScript"],
-    viewCount: 256,
-    likeCount: 32,
-    commentCount: 8,
-  },
-]);
+const resources = ref<Resource[]>([]);
 
 // 刷新状态
 const refreshing = ref(false);
 
 // 搜索
-const handleSearch = () => {
+const handleSearch = async () => {
   if (!keyword.value) return;
 
-  // TODO: 实现搜索功能
-  uni.showToast({
-    title: "搜索功能开发中",
-    icon: "none",
-  });
+  try {
+    const { data } = await getResources({ keyword: keyword.value });
+    resources.value = data;
+  } catch (error) {
+    uni.showToast({
+      title: "搜索失败",
+      icon: "none",
+    });
+  }
 };
 
 // 显示筛选
@@ -165,13 +156,26 @@ const handleShowFilter = () => {
 };
 
 // 切换分类
-const handleChangeCategory = (category: string) => {
+const handleChangeCategory = async (
+  category: (typeof categories)[number]["value"]
+) => {
   currentCategory.value = category;
-  // TODO: 根据分类加载数据
+  try {
+    const { data } = await getResources({
+      type: category === "all" ? undefined : category,
+    });
+    resources.value = data;
+  } catch (error) {
+    console.error("获取资源列表失败:", error);
+    uni.showToast({
+      title: "获取数据失败",
+      icon: "none",
+    });
+  }
 };
 
 // 查看资源详情
-const handleViewResource = (resource: any) => {
+const handleViewResource = (resource: Resource) => {
   uni.navigateTo({
     url: `/pages/resource/detail/index?id=${resource.id}`,
   });
@@ -185,7 +189,7 @@ const handleCreateResource = () => {
 };
 
 // 资源操作
-const handleAction = (resource: any) => {
+const handleAction = (resource: Resource) => {
   switch (resource.type) {
     case "job":
       uni.showToast({
@@ -224,20 +228,29 @@ const handleLoadMore = () => {
 };
 
 // 刷新
-const handleRefresh = () => {
+const handleRefresh = async () => {
   refreshing.value = true;
-  // TODO: 刷新数据
-  setTimeout(() => {
-    refreshing.value = false;
+  try {
+    const { data } = await getResources({
+      type: currentCategory.value === "all" ? undefined : currentCategory.value,
+    });
+    resources.value = data;
     uni.showToast({
       title: "刷新成功",
       icon: "success",
     });
-  }, 1000);
+  } catch (error) {
+    uni.showToast({
+      title: "刷新失败",
+      icon: "none",
+    });
+  } finally {
+    refreshing.value = false;
+  }
 };
 
 // 获取类型文本
-const getTypeText = (type: "job" | "project" | "experience" | "document") => {
+const getTypeText = (type: Resource["type"]) => {
   const typeMap = {
     job: "招聘",
     project: "项目",
@@ -248,7 +261,7 @@ const getTypeText = (type: "job" | "project" | "experience" | "document") => {
 };
 
 // 获取操作文本
-const getActionText = (type: "job" | "project" | "experience" | "document") => {
+const getActionText = (type: Resource["type"]) => {
   const actionMap = {
     job: "投递简历",
     project: "合作洽谈",
@@ -258,8 +271,17 @@ const getActionText = (type: "job" | "project" | "experience" | "document") => {
   return actionMap[type];
 };
 
-onMounted(() => {
-  // TODO: 获取资源列表
+onMounted(async () => {
+  try {
+    const { data } = await getResources();
+    resources.value = data;
+  } catch (error) {
+    console.error("获取资源列表失败:", error);
+    uni.showToast({
+      title: "获取数据失败",
+      icon: "none",
+    });
+  }
 });
 </script>
 

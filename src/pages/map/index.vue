@@ -53,6 +53,7 @@
 <script lang="ts" setup>
 import { ref, reactive, onMounted } from "vue";
 import { useUserStore } from "@/stores/user";
+import { MAP_CONFIG } from "@/config";
 
 // 用户状态管理
 const userStore = useUserStore();
@@ -79,6 +80,41 @@ const markers = ref([
     height: 32,
   },
 ]);
+
+// 处理图片加载错误
+const handleImageError = (e: any) => {
+  const target = e.target;
+  if (target && target.src) {
+    // 设置默认图片
+    if (target.src.includes("avatar")) {
+      target.src = "/static/avatar/default.png";
+    } else if (target.src.includes("tabbar")) {
+      target.src = "/static/tabbar/home.png";
+    } else if (target.src.includes("markers")) {
+      target.src = "/static/markers/default.png";
+    } else {
+      target.src = "/static/images/default.jpg";
+    }
+  }
+};
+
+// 初始化地图SDK
+const initMapSDK = () => {
+  // #ifdef MP-WEIXIN
+  // 微信小程序
+  uni.loadMapSdk({
+    key: MAP_CONFIG.WX_MAP_KEY,
+  });
+  // #endif
+
+  // #ifdef APP-PLUS
+  // App端
+  uni.loadMapSdk({
+    key: MAP_CONFIG.AMAP_KEY,
+    platform: "amap",
+  });
+  // #endif
+};
 
 // 搜索
 const handleSearch = () => {
@@ -162,6 +198,8 @@ const handleShowActivity = () => {
 };
 
 onMounted(() => {
+  // 初始化地图SDK
+  initMapSDK();
   // 获取用户位置
   handleLocateUser();
 });

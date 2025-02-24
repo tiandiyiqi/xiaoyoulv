@@ -4,163 +4,162 @@
 }
 
 .iconfont {
-  font-family: "iconfont" !important;
-  font-size: 16px;
+  font-family: system-ui;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .icon-like:before {
-  content: "\e8ad";
+  content: "♥";
 }
 
 .icon-comment:before {
-  content: "\e8b9";
+  content: "💬";
 }
 
 .icon-share:before {
-  content: "\e8b0";
+  content: "↗";
 }
 
 .icon-add:before {
-  content: "\e8c0";
+  content: "+";
 }
 
 .icon-location:before {
-  content: "\e8bb";
+  content: "📍";
 }
 
 .icon-user:before {
-  content: "\e8c8";
+  content: "👤";
 }
 
 .icon-activity:before {
-  content: "\e8b1";
+  content: "📅";
 }
 
 .icon-resource:before {
-  content: "\e8ba";
+  content: "📁";
 }
 
 .icon-search:before {
-  content: "\e8b4";
+  content: "🔍";
 }
 
 .icon-edit:before {
-  content: "\e8ac";
+  content: "✎";
 }
 
 .icon-delete:before {
-  content: "\e8b2";
+  content: "🗑";
 }
 
 .icon-settings:before {
-  content: "\e8b8";
+  content: "⚙";
 }
 
 .icon-message:before {
-  content: "\e8bd";
+  content: "✉";
 }
 
 .icon-notification:before {
-  content: "\e8c1";
+  content: "🔔";
 }
 
 .icon-camera:before {
-  content: "\e8bc";
+  content: "📷";
 }
 
 .icon-image:before {
-  content: "\e8be";
+  content: "🖼";
 }
 
 .icon-video:before {
-  content: "\e8bf";
+  content: "🎥";
 }
 
 .icon-close:before {
-  content: "\e8b3";
+  content: "×";
 }
 
 .icon-check:before {
-  content: "\e8b5";
+  content: "✓";
 }
 
 .icon-arrow-right:before {
-  content: "\e8b6";
+  content: "→";
 }
 
 .icon-arrow-left:before {
-  content: "\e8b7";
+  content: "←";
 }
 
 .icon-lock:before {
-  content: "\e8c2";
+  content: "🔒";
 }
 
 .icon-eye:before {
-  content: "\e8c3";
+  content: "👁";
 }
 
 .icon-eye-close:before {
-  content: "\e8c4";
+  content: "👁‍🗨";
 }
 
 .icon-weixin:before {
-  content: "\e8c5";
+  content: "W";
 }
 
 .icon-qq:before {
-  content: "\e8c6";
+  content: "Q";
 }
 
 .icon-alipay:before {
-  content: "\e8c7";
+  content: "A";
 }
 
 .icon-education:before {
-  content: "\e8c9";
+  content: "🎓";
 }
 
 .icon-work:before {
-  content: "\e8ca";
+  content: "💼";
 }
 
 .icon-topic:before {
-  content: "\e8cb";
+  content: "#";
 }
 
 .icon-visibility:before {
-  content: "\e8cc";
+  content: "👁";
 }
 
 .icon-filter:before {
-  content: "\e8cd";
+  content: "⚡";
 }
 
 .icon-company:before {
-  content: "\e8ce";
+  content: "🏢";
 }
 
 .icon-time:before {
-  content: "\e8cf";
+  content: "⏰";
 }
 
 .icon-money:before {
-  content: "\e8d0";
+  content: "💰";
 }
 
 .icon-phone:before {
-  content: "\e8d1";
+  content: "📱";
 }
 
 .icon-view:before {
-  content: "\e8d2";
+  content: "👀";
 }
 
 .icon-file:before {
-  content: "\e8d3";
+  content: "📄";
 }
 
 .icon-upload:before {

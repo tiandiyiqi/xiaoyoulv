@@ -33,23 +33,23 @@
         <view class="time-box">
           <picker
             mode="date"
-            :value="form.date"
+            :value="tempDateTime.date"
             @change="handleDateChange"
             class="picker"
           >
             <view class="picker-value">
-              <text>{{ form.date || "选择日期" }}</text>
+              <text>{{ tempDateTime.date || "选择日期" }}</text>
               <text class="iconfont icon-arrow-right"></text>
             </view>
           </picker>
           <picker
             mode="time"
-            :value="form.time"
+            :value="tempDateTime.time"
             @change="handleTimeChange"
             class="picker"
           >
             <view class="picker-value">
-              <text>{{ form.time || "选择时间" }}</text>
+              <text>{{ tempDateTime.time || "选择时间" }}</text>
               <text class="iconfont icon-arrow-right"></text>
             </view>
           </picker>
@@ -148,23 +148,30 @@
 <script lang="ts" setup>
 import { ref, reactive } from "vue";
 import { useUserStore } from "@/stores/user";
+import { createEvent } from "../../../api/event";
+import type { Event } from "../../../api/event";
 
 // 用户状态管理
 const userStore = useUserStore();
 
 // 表单数据
-const form = reactive({
+const form = reactive<Partial<Event>>({
   cover: "",
   title: "",
-  date: "",
   time: "",
   location: "",
-  maxParticipants: "",
-  fee: "",
+  maxParticipants: undefined,
+  fee: 0,
   description: "",
   deadline: "",
   contact: "",
   notice: "",
+});
+
+// 临时日期和时间
+const tempDateTime = reactive({
+  date: "",
+  time: "",
 });
 
 // 加载状态
@@ -186,12 +193,18 @@ const handleUploadCover = () => {
 
 // 选择日期
 const handleDateChange = (e: any) => {
-  form.date = e.detail.value;
+  tempDateTime.date = e.detail.value;
+  if (tempDateTime.date && tempDateTime.time) {
+    form.time = `${tempDateTime.date} ${tempDateTime.time}`;
+  }
 };
 
 // 选择时间
 const handleTimeChange = (e: any) => {
-  form.time = e.detail.value;
+  tempDateTime.time = e.detail.value;
+  if (tempDateTime.date && tempDateTime.time) {
+    form.time = `${tempDateTime.date} ${tempDateTime.time}`;
+  }
 };
 
 // 选择地点
@@ -209,7 +222,7 @@ const handleDeadlineChange = (e: any) => {
 };
 
 // 提交表单
-const handleSubmit = () => {
+const handleSubmit = async () => {
   // 表单验证
   if (!form.cover) {
     uni.showToast({
@@ -225,7 +238,7 @@ const handleSubmit = () => {
     });
     return;
   }
-  if (!form.date || !form.time) {
+  if (!form.time) {
     uni.showToast({
       title: "请选择活动时间",
       icon: "none",
@@ -270,15 +283,26 @@ const handleSubmit = () => {
 
   loading.value = true;
 
-  // TODO: 发布活动
-  setTimeout(() => {
-    loading.value = false;
+  try {
+    const { data } = await createEvent({
+      ...form,
+      status: "upcoming",
+    });
     uni.showToast({
       title: "发布成功",
       icon: "success",
     });
-    uni.navigateBack();
-  }, 1000);
+    setTimeout(() => {
+      uni.navigateBack();
+    }, 1500);
+  } catch (error) {
+    uni.showToast({
+      title: "发布失败",
+      icon: "none",
+    });
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 

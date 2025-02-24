@@ -124,6 +124,8 @@
 <script lang="ts" setup>
 import { ref, reactive } from "vue";
 import { useUserStore } from "@/stores/user";
+import { createResource } from "../../../api/resource";
+import type { Resource } from "../../../api/resource";
 
 // 用户状态管理
 const userStore = useUserStore();
@@ -134,18 +136,18 @@ const types = [
   { label: "项目合作", value: "project" as const, icon: "icon-project" },
   { label: "经验分享", value: "experience" as const, icon: "icon-share" },
   { label: "资料文档", value: "document" as const, icon: "icon-file" },
-];
+] as const;
 
 // 表单数据
-const form = reactive({
-  type: "job" as "job" | "project" | "experience" | "document",
+const form = reactive<Partial<Resource>>({
+  type: "job",
   title: "",
   description: "",
   requirement: "",
   budget: "",
   file: "",
   fileName: "",
-  tags: [] as string[],
+  tags: [],
   contact: "",
 });
 
@@ -156,9 +158,7 @@ const tagInput = ref("");
 const loading = ref(false);
 
 // 选择类型
-const handleSelectType = (
-  type: "job" | "project" | "experience" | "document"
-) => {
+const handleSelectType = (type: Resource["type"]) => {
   form.type = type;
 };
 
@@ -187,24 +187,26 @@ const handleRemoveFile = () => {
 // 添加标签
 const handleAddTag = () => {
   if (!tagInput.value) return;
-  if (form.tags.includes(tagInput.value)) {
+  if (form.tags?.includes(tagInput.value)) {
     uni.showToast({
       title: "标签已存在",
       icon: "none",
     });
     return;
   }
-  form.tags.push(tagInput.value);
+  form.tags = [...(form.tags || []), tagInput.value];
   tagInput.value = "";
 };
 
 // 移除标签
 const handleRemoveTag = (index: number) => {
-  form.tags.splice(index, 1);
+  if (form.tags) {
+    form.tags = form.tags.filter((_: string, i: number) => i !== index);
+  }
 };
 
 // 提交表单
-const handleSubmit = () => {
+const handleSubmit = async () => {
   // 表单验证
   if (!form.title) {
     uni.showToast({
@@ -241,7 +243,7 @@ const handleSubmit = () => {
     });
     return;
   }
-  if (form.tags.length === 0) {
+  if (!form.tags?.length) {
     uni.showToast({
       title: "请添加标签",
       icon: "none",
@@ -258,15 +260,27 @@ const handleSubmit = () => {
 
   loading.value = true;
 
-  // TODO: 发布资源
-  setTimeout(() => {
-    loading.value = false;
+  try {
+    const { data } = await createResource({
+      ...form,
+      nickname: userStore.userInfo.nickname,
+      avatar: userStore.userInfo.avatar,
+    });
     uni.showToast({
       title: "发布成功",
       icon: "success",
     });
-    uni.navigateBack();
-  }, 1000);
+    setTimeout(() => {
+      uni.navigateBack();
+    }, 1500);
+  } catch (error) {
+    uni.showToast({
+      title: "发布失败",
+      icon: "none",
+    });
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 

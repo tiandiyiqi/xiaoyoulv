@@ -60,6 +60,51 @@ page {
   background-color: #f5f5f5;
 }
 
+/* 导航栏样式 */
+.uni-navbar {
+  background-color: #f8f8f8 !important;
+}
+
+.uni-navbar__header {
+  background-color: #f8f8f8 !important;
+}
+
+.uni-navbar__header-btns {
+  color: #333 !important;
+}
+
+.uni-navbar__header-container-inner {
+  color: #333 !important;
+  font-weight: 500 !important;
+}
+
+/* tabbar样式 */
+.uni-tabbar {
+  background-color: #f8f8f8 !important;
+  border-top: 1px solid #eee;
+}
+
+.uni-tabbar-item {
+  color: #666 !important;
+}
+
+.uni-tabbar-item--active {
+  color: #018eff !important;
+}
+
+/* 图片加载失败时的默认样式 */
+image {
+  background-color: #f5f5f5;
+}
+
+image[mode="aspectFill"] {
+  background-color: #f5f5f5;
+}
+
+image[mode="scaleToFill"] {
+  background-color: #f5f5f5;
+}
+
 /* 通用布局类 */
 .flex {
   display: flex;

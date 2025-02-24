@@ -1,13 +1,15 @@
 import { defineConfig } from 'vite'
 import uni from '@dcloudio/vite-plugin-uni'
-import path from 'path'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [uni()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+      'mock': resolve(__dirname, 'mock'),
+    },
+    extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json']
   },
   css: {
     preprocessorOptions: {
@@ -19,5 +21,16 @@ export default defineConfig({
   server: {
     port: 3000,
     host: '0.0.0.0'
-  }
+  },
+  build: {
+    assetsDir: 'static',
+    rollupOptions: {
+      output: {
+        chunkFileNames: 'static/js/[name]-[hash].js',
+        entryFileNames: 'static/js/[name]-[hash].js',
+        assetFileNames: 'static/[ext]/[name]-[hash].[ext]'
+      }
+    }
+  },
+  publicDir: 'src/static'
 }) 

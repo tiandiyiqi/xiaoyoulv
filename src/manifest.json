@@ -19,6 +19,16 @@
             "scope.userLocation": {
                 "desc": "您的位置信息将用于校友地图功能"
             }
+        },
+        "requiredPrivateInfos": [
+            "getLocation",
+            "chooseLocation"
+        ],
+        "plugins": {
+            "chooseLocation": {
+                "version": "1.0.10",
+                "provider": "wx76a9a06e5b4e693e"
+            }
         }
     },
     "mp-alipay": {
@@ -46,13 +56,23 @@
                     "<uses-permission android:name=\"android.permission.INTERNET\"/>",
                     "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>",
                     "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>"
-                ]
+                ],
+                "abiFilters": ["armeabi-v7a", "arm64-v8a", "x86"],
+                "minSdkVersion": 21,
+                "targetSdkVersion": 30,
+                "abiFilters": ["armeabi-v7a", "arm64-v8a", "x86"]
             },
             "ios": {
                 "privacyDescription": {
                     "NSLocationWhenInUseUsageDescription": "校友地图功能需要获取您的位置信息",
                     "NSCameraUsageDescription": "发布动态时拍摄照片需要使用相机",
                     "NSPhotoLibraryUsageDescription": "发布动态时选择照片需要访问相册"
+                },
+                "capabilities": {
+                    "location": ["location-when-in-use"]
+                },
+                "maps": {
+                    "ENABLE_BITCODE": "NO"
                 }
             },
             "icons": {

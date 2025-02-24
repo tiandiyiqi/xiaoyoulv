@@ -127,43 +127,30 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useUserStore } from "@/stores/user";
+import { getEventById, joinEvent, commentEvent } from "../../../api/event";
+import type { Event } from "../../../api/event";
 
 // 用户状态管理
 const userStore = useUserStore();
 
 // 活动数据
-const activity = ref({
-  id: "1",
-  cover: "/static/images/activity1.jpg",
-  title: "2024届校友聚会",
-  status: "upcoming" as "upcoming" | "ongoing" | "ended",
-  time: "2024-03-01 14:00",
-  location: "深圳市南山区",
-  participantCount: 128,
-  maxParticipants: 200,
+const activity = ref<Event>({
+  id: "",
+  title: "",
+  cover: "",
+  time: "",
+  location: "",
+  participantCount: 0,
+  maxParticipants: 0,
+  interestedCount: 0,
   fee: 0,
-  deadline: "2024-02-28",
-  contact: "13800138000",
-  description:
-    "这是一场专属于2024届校友的聚会活动，让我们相聚在这里，分享各自的故事，畅谈未来的发展。",
-  notice:
-    "1. 请准时到场\n2. 请带好身份证\n3. 请遵守活动规则\n4. 如有特殊情况请提前联系主办方",
-  participants: [
-    {
-      id: "1",
-      nickname: "张三",
-      avatar: "/static/avatar/default.png",
-    },
-  ],
-  comments: [
-    {
-      id: "1",
-      nickname: "李四",
-      avatar: "/static/avatar/default.png",
-      content: "期待参加这次活动！",
-      createTime: "2024-02-23 14:30",
-    },
-  ],
+  deadline: "",
+  contact: "",
+  description: "",
+  notice: "",
+  status: "upcoming",
+  participants: [],
+  comments: [],
 });
 
 // 是否可以参加
@@ -177,7 +164,7 @@ const canJoin = computed(() => {
 });
 
 // 获取状态文本
-const getStatusText = (status: "upcoming" | "ongoing" | "ended") => {
+const getStatusText = (status: Event["status"]) => {
   const statusMap = {
     upcoming: "即将开始",
     ongoing: "进行中",
@@ -198,7 +185,7 @@ const getActionText = () => {
 };
 
 // 查看用户主页
-const handleViewProfile = (user: any) => {
+const handleViewProfile = (user: { id: string }) => {
   uni.navigateTo({
     url: `/pages/profile/index?id=${user.id}`,
   });
@@ -214,33 +201,60 @@ const handleShare = () => {
 
 // 评论
 const handleComment = () => {
-  uni.showToast({
-    title: "评论功能开发中",
-    icon: "none",
-  });
+  // TODO: 滚动到评论区
 };
 
 // 报名
-const handleJoin = () => {
+const handleJoin = async () => {
   if (!canJoin.value) return;
 
   uni.showModal({
     title: "确认报名",
     content: "是否确认报名参加该活动？",
-    success: (res) => {
+    success: async (res) => {
       if (res.confirm) {
-        // TODO: 报名活动
-        uni.showToast({
-          title: "报名成功",
-          icon: "success",
-        });
+        try {
+          const { data } = await joinEvent(activity.value.id, {
+            id: userStore.userInfo.id,
+            nickname: userStore.userInfo.nickname,
+            avatar: userStore.userInfo.avatar,
+          });
+          if (data) {
+            uni.showToast({
+              title: "报名成功",
+              icon: "success",
+            });
+            // 重新获取活动详情
+            const { data: eventData } = await getEventById(activity.value.id);
+            activity.value = eventData;
+          }
+        } catch (error) {
+          uni.showToast({
+            title: "报名失败",
+            icon: "none",
+          });
+        }
       }
     },
   });
 };
 
-onMounted(() => {
-  // TODO: 获取活动详情
+onMounted(async () => {
+  const pages = getCurrentPages();
+  const page = pages[pages.length - 1] as any;
+  const id = page.options?.id;
+
+  if (id) {
+    try {
+      const { data } = await getEventById(id);
+      activity.value = data;
+    } catch (error) {
+      uni.showToast({
+        title: "获取数据失败",
+        icon: "none",
+      });
+    }
+  }
 });
 </script>
 

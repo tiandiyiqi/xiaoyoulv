@@ -2,295 +2,416 @@
 // index.vue
 import { ref, onMounted } from "vue";
 import { onPullDownRefresh, onReachBottom } from "@dcloudio/uni-app";
+import { postApi } from "mock";
+
+interface Reply {
+  id: string;
+  nickname: string;
+  content: string;
+  createTime: string;
+  replyTo: string;
+}
+
+interface Comment {
+  id: string;
+  nickname: string;
+  avatar: string;
+  content: string;
+  createTime: string;
+  likeCount: number;
+  isLiked: boolean;
+  replyCount: number;
+  replies: Reply[];
+}
 
 interface Post {
   id: string;
-  username: string;
+  nickname: string;
   avatar: string;
   content: string;
-  images?: string[];
+  images: string[];
+  location?: string;
   createTime: string;
   likeCount: number;
   commentCount: number;
   shareCount: number;
+  isLiked: boolean;
+  comments: Comment[];
 }
 
+// 搜索关键词
+const keyword = ref("");
+
+// 动态列表
 const posts = ref<Post[]>([]);
+
+// 是否正在刷新
+const isRefreshing = ref(false);
+
+// 分页参数
 const page = ref(1);
 const pageSize = 10;
-const loading = ref(false);
 const hasMore = ref(true);
 
-// 获取动态列表
-const getPosts = async (refresh = false) => {
-  if (loading.value || (!hasMore.value && !refresh)) return;
+// 搜索
+const handleSearch = () => {
+  loadPosts();
+};
 
-  loading.value = true;
+// 发布动态
+const handlePost = () => {
+  uni.navigateTo({
+    url: "/pages/post/create",
+  });
+};
+
+// 加载动态列表
+const loadPosts = async () => {
   try {
-    // TODO: 调用接口获取数据
-    const mockData: Post[] = [
-      {
-        id: "1",
-        username: "张三",
-        avatar: "/static/avatar/default.png",
-        content: "今天是个好日子，和老同学聚会真开心！",
-        images: ["/static/images/demo1.jpg", "/static/images/demo2.jpg"],
-        createTime: "2024-02-23 14:30",
-        likeCount: 12,
-        commentCount: 3,
-        shareCount: 1,
-      },
-    ];
-
-    if (refresh) {
-      posts.value = mockData;
-      page.value = 1;
-    } else {
-      posts.value = [...posts.value, ...mockData];
-      page.value++;
-    }
-
-    hasMore.value = mockData.length === pageSize;
+    const res = await postApi.getPosts({ keyword: keyword.value });
+    posts.value = res.data;
   } catch (error) {
+    console.error("加载动态列表失败", error);
     uni.showToast({
-      title: "获取数据失败",
+      title: "加载失败",
       icon: "none",
     });
-  } finally {
-    loading.value = false;
-    if (refresh) {
-      uni.stopPullDownRefresh();
+  }
+};
+
+// 处理图片加载错误
+const handleImageError = (e: any) => {
+  const target = e.target;
+  if (target && target.src) {
+    // 设置默认图片
+    if (target.src.includes("avatar")) {
+      target.src = "/static/avatar/default.png";
+    } else {
+      target.src = "/static/images/default.jpg";
     }
   }
 };
 
 // 预览图片
-const previewImage = (urls: string[], current: number) => {
+const handlePreviewImage = (images: string[], current: number) => {
   uni.previewImage({
-    urls,
-    current: urls[current],
+    urls: images,
+    current: images[current],
   });
 };
 
 // 点赞
-const handleLike = (post: Post) => {
-  // TODO: 实现点赞功能
-  uni.showToast({
-    title: "点赞功能开发中",
-    icon: "none",
-  });
+const handleLike = async (post: Post) => {
+  try {
+    await postApi.likePost(post.id);
+    post.isLiked = !post.isLiked;
+    post.likeCount += post.isLiked ? 1 : -1;
+  } catch (error) {
+    console.error("点赞失败", error);
+    uni.showToast({
+      title: "操作失败",
+      icon: "none",
+    });
+  }
 };
 
 // 评论
 const handleComment = (post: Post) => {
-  // TODO: 实现评论功能
-  uni.showToast({
-    title: "评论功能开发中",
-    icon: "none",
+  uni.navigateTo({
+    url: `/pages/post/detail?id=${post.id}`,
   });
 };
 
 // 分享
 const handleShare = (post: Post) => {
-  // TODO: 实现分享功能
+  uni.showActionSheet({
+    itemList: ["分享到微信", "复制链接"],
+    success: (res) => {
+      if (res.tapIndex === 0) {
+        // TODO: 实现微信分享
+        uni.showToast({
+          title: "分享功能开发中",
+          icon: "none",
+        });
+      } else if (res.tapIndex === 1) {
+        // TODO: 实现复制链接
+        uni.setClipboardData({
+          data: `https://example.com/post/${post.id}`,
+          success: () => {
+            uni.showToast({
+              title: "链接已复制",
+              icon: "success",
+            });
+          },
+        });
+      }
+    },
+  });
+};
+
+// 加载更多
+const handleLoadMore = () => {
+  // TODO: 实现加载更多
   uni.showToast({
-    title: "分享功能开发中",
+    title: "没有更多了",
     icon: "none",
   });
 };
 
-// 发布动态
-const handleCreatePost = () => {
-  uni.navigateTo({
-    url: "/pages/post/create/index",
-  });
+// 刷新
+const handleRefresh = async () => {
+  isRefreshing.value = true;
+  await loadPosts();
+  isRefreshing.value = false;
 };
+
+onMounted(() => {
+  loadPosts();
+});
 
 // 下拉刷新
 onPullDownRefresh(() => {
-  getPosts(true);
+  handleRefresh();
 });
 
 // 上拉加载
 onReachBottom(() => {
-  getPosts();
-});
-
-onMounted(() => {
-  getPosts();
+  handleLoadMore();
 });
 </script>
 
 <template>
-  <view class="index">
-    <view class="post-list">
-      <view v-if="posts.length === 0" class="empty">
-        <text>暂无动态</text>
+  <view class="home">
+    <view class="header">
+      <view class="search-box">
+        <text class="iconfont icon-search"></text>
+        <input
+          class="input"
+          type="text"
+          v-model="keyword"
+          placeholder="搜索动态、活动、资源"
+          placeholder-class="placeholder"
+          @confirm="handleSearch"
+        />
       </view>
-      <view v-else class="list">
-        <view v-for="post in posts" :key="post.id" class="post-item">
-          <view class="post-header">
-            <image class="avatar" :src="post.avatar" mode="aspectFill" />
-            <view class="user-info">
-              <text class="username">{{ post.username }}</text>
-              <text class="time">{{ post.createTime }}</text>
-            </view>
+      <view class="post-btn" @tap="handlePost">
+        <text class="iconfont icon-add"></text>
+      </view>
+    </view>
+
+    <view class="post-list">
+      <view class="post-item" v-for="post in posts" :key="post.id">
+        <view class="post-header">
+          <image
+            class="avatar"
+            :src="post.avatar"
+            mode="aspectFill"
+            @error="handleImageError"
+          />
+          <view class="info">
+            <text class="nickname">{{ post.nickname }}</text>
+            <text class="time">{{ post.createTime }}</text>
           </view>
-          <view class="post-content">
-            <text class="text">{{ post.content }}</text>
-            <view
-              v-if="post.images && post.images.length > 0"
-              class="image-list"
-            >
-              <image
-                v-for="(image, index) in post.images"
-                :key="index"
-                :src="image"
-                mode="aspectFill"
-                class="post-image"
-                @tap="previewImage(post.images, index)"
-              />
-            </view>
+        </view>
+        <view class="post-content">
+          <text class="text">{{ post.content }}</text>
+          <view class="images" v-if="post.images && post.images.length > 0">
+            <image
+              v-for="(image, index) in post.images"
+              :key="index"
+              :src="image"
+              mode="aspectFill"
+              @tap="handlePreviewImage(post.images, index)"
+              @error="handleImageError"
+            />
           </view>
-          <view class="post-footer">
-            <view class="action-item" @tap="handleLike(post)">
-              <text class="iconfont icon-like"></text>
-              <text class="count">{{ post.likeCount }}</text>
-            </view>
-            <view class="action-item" @tap="handleComment(post)">
-              <text class="iconfont icon-comment"></text>
-              <text class="count">{{ post.commentCount }}</text>
-            </view>
-            <view class="action-item" @tap="handleShare(post)">
-              <text class="iconfont icon-share"></text>
-              <text class="count">{{ post.shareCount }}</text>
-            </view>
+          <view class="location" v-if="post.location">
+            <text class="iconfont icon-location"></text>
+            <text class="text">{{ post.location }}</text>
+          </view>
+        </view>
+        <view class="post-footer">
+          <view class="action-item" @tap="handleLike(post)">
+            <text
+              class="iconfont"
+              :class="post.isLiked ? 'icon-like active' : 'icon-like'"
+            ></text>
+            <text class="count">{{ post.likeCount }}</text>
+          </view>
+          <view class="action-item" @tap="handleComment(post)">
+            <text class="iconfont icon-comment"></text>
+            <text class="count">{{ post.commentCount }}</text>
+          </view>
+          <view class="action-item" @tap="handleShare(post)">
+            <text class="iconfont icon-share"></text>
+            <text class="count">{{ post.shareCount }}</text>
           </view>
         </view>
       </view>
-    </view>
-    <view class="fab-button" @tap="handleCreatePost">
-      <text class="iconfont icon-add"></text>
     </view>
   </view>
 </template>
 
 <style lang="scss">
-.index {
+.home {
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding-bottom: 100rpx;
 
-  .post-list {
-    .empty {
-      padding: 40rpx 0;
-      text-align: center;
-      color: #999;
+  .header {
+    background-color: #fff;
+    padding: 20rpx;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+
+    .search-box {
+      flex: 1;
+      height: 72rpx;
+      background-color: #f5f5f5;
+      border-radius: 36rpx;
+      display: flex;
+      align-items: center;
+      padding: 0 30rpx;
+      margin-right: 20rpx;
+
+      .iconfont {
+        font-size: 32rpx;
+        color: #999;
+        margin-right: 10rpx;
+      }
+
+      .input {
+        flex: 1;
+        height: 100%;
+        font-size: 28rpx;
+      }
+
+      .placeholder {
+        color: #999;
+      }
     }
 
-    .list {
-      .post-item {
-        margin-bottom: 20rpx;
-        background-color: #fff;
-        padding: 20rpx;
+    .post-btn {
+      width: 72rpx;
+      height: 72rpx;
+      background-color: #018eff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-        .post-header {
-          display: flex;
-          align-items: center;
-          margin-bottom: 20rpx;
-
-          .avatar {
-            width: 80rpx;
-            height: 80rpx;
-            border-radius: 50%;
-            margin-right: 20rpx;
-          }
-
-          .user-info {
-            flex: 1;
-
-            .username {
-              font-size: 28rpx;
-              color: #333;
-              font-weight: bold;
-            }
-
-            .time {
-              font-size: 24rpx;
-              color: #999;
-              margin-top: 4rpx;
-            }
-          }
-        }
-
-        .post-content {
-          .text {
-            font-size: 28rpx;
-            color: #333;
-            line-height: 1.6;
-          }
-
-          .image-list {
-            display: flex;
-            flex-wrap: wrap;
-            margin-top: 20rpx;
-
-            .post-image {
-              width: 220rpx;
-              height: 220rpx;
-              margin-right: 10rpx;
-              margin-bottom: 10rpx;
-
-              &:nth-child(3n) {
-                margin-right: 0;
-              }
-            }
-          }
-        }
-
-        .post-footer {
-          display: flex;
-          justify-content: space-around;
-          margin-top: 20rpx;
-          padding-top: 20rpx;
-          border-top: 1rpx solid #eee;
-
-          .action-item {
-            display: flex;
-            align-items: center;
-
-            .iconfont {
-              font-size: 36rpx;
-              color: #666;
-              margin-right: 8rpx;
-            }
-
-            .count {
-              font-size: 24rpx;
-              color: #999;
-            }
-          }
-        }
+      .iconfont {
+        font-size: 40rpx;
+        color: #fff;
       }
     }
   }
 
-  .fab-button {
-    position: fixed;
-    right: 40rpx;
-    bottom: 140rpx;
-    width: 100rpx;
-    height: 100rpx;
-    background-color: #018eff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+  .post-list {
+    padding: 20rpx;
 
-    .iconfont {
-      font-size: 48rpx;
-      color: #fff;
+    .post-item {
+      margin-bottom: 20rpx;
+      background-color: #fff;
+      padding: 30rpx;
+      border-radius: 12rpx;
+
+      .post-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20rpx;
+
+        .avatar {
+          width: 80rpx;
+          height: 80rpx;
+          border-radius: 50%;
+          margin-right: 20rpx;
+        }
+
+        .info {
+          flex: 1;
+
+          .nickname {
+            font-size: 32rpx;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 6rpx;
+          }
+
+          .time {
+            font-size: 24rpx;
+            color: #999;
+          }
+        }
+      }
+
+      .post-content {
+        .text {
+          font-size: 28rpx;
+          color: #333;
+          line-height: 1.6;
+          margin-bottom: 20rpx;
+        }
+
+        .images {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10rpx;
+          margin-bottom: 20rpx;
+
+          image {
+            width: 100%;
+            height: 200rpx;
+            border-radius: 8rpx;
+          }
+        }
+
+        .location {
+          display: flex;
+          align-items: center;
+          margin-bottom: 20rpx;
+
+          .iconfont {
+            font-size: 28rpx;
+            color: #999;
+            margin-right: 6rpx;
+          }
+
+          .text {
+            font-size: 24rpx;
+            color: #999;
+            margin-bottom: 0;
+          }
+        }
+      }
+
+      .post-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding-top: 20rpx;
+        border-top: 1rpx solid #eee;
+
+        .action-item {
+          display: flex;
+          align-items: center;
+
+          .iconfont {
+            font-size: 36rpx;
+            color: #999;
+            margin-right: 10rpx;
+
+            &.active {
+              color: #ff6b6b;
+            }
+          }
+
+          .count {
+            font-size: 24rpx;
+            color: #999;
+          }
+        }
+      }
     }
   }
 }

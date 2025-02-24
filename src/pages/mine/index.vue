@@ -7,10 +7,10 @@
           <text class="nickname">{{ userInfo?.nickname || "未设置昵称" }}</text>
           <text class="username">{{ userInfo?.username }}</text>
         </view>
-      </view>
-      <view class="edit-btn" @tap="handleEditProfile">
-        <text class="iconfont icon-edit"></text>
-        编辑资料
+        <view class="edit-btn" @tap="handleEditProfile">
+          <text class="iconfont icon-edit"></text>
+          编辑资料
+        </view>
       </view>
     </view>
 
@@ -225,74 +225,97 @@ onMounted(() => {
     height: 300rpx;
     background-color: #018eff;
     padding: 40rpx;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    position: relative;
+    border-radius: 0 0 30rpx 30rpx;
+    box-shadow: 0 4rpx 12rpx rgba(1, 142, 255, 0.2);
 
     .user-info {
       display: flex;
       align-items: center;
+      margin-top: 40rpx;
 
       .avatar {
         width: 120rpx;
         height: 120rpx;
         border-radius: 50%;
-        border: 4rpx solid #fff;
+        border: 4rpx solid rgba(255, 255, 255, 0.8);
         margin-right: 20rpx;
+        box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
       }
 
       .info {
+        flex: 1;
+
         .nickname {
           font-size: 36rpx;
           color: #fff;
           font-weight: bold;
           margin-bottom: 10rpx;
+          text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
         }
 
         .username {
           font-size: 28rpx;
-          color: rgba(255, 255, 255, 0.8);
+          color: rgba(255, 255, 255, 0.9);
         }
       }
-    }
 
-    .edit-btn {
-      align-self: flex-end;
-      display: flex;
-      align-items: center;
-      padding: 12rpx 24rpx;
-      background-color: rgba(255, 255, 255, 0.2);
-      border-radius: 32rpx;
-
-      .iconfont {
-        font-size: 28rpx;
+      .edit-btn {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 30rpx;
+        padding: 12rpx 24rpx;
+        display: flex;
+        align-items: center;
         color: #fff;
-        margin-right: 8rpx;
-      }
+        font-size: 24rpx;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s;
 
-      text {
-        font-size: 28rpx;
-        color: #fff;
+        &:active {
+          transform: scale(0.95);
+          background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .iconfont {
+          margin-right: 6rpx;
+          font-size: 28rpx;
+        }
       }
     }
   }
 
   .stats {
-    margin: -60rpx 40rpx 0;
-    padding: 40rpx;
+    margin: 20rpx;
+    padding: 30rpx 20rpx;
     background-color: #fff;
     border-radius: 16rpx;
     display: flex;
     justify-content: space-around;
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+    align-items: center;
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+    position: relative;
+    margin-top: -60rpx;
 
     .stat-item {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
+
+      &:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2rpx;
+        height: 40rpx;
+        background-color: #eee;
+      }
 
       .count {
-        font-size: 36rpx;
+        font-size: 40rpx;
         color: #333;
         font-weight: bold;
         margin-bottom: 8rpx;
@@ -300,23 +323,33 @@ onMounted(() => {
 
       .label {
         font-size: 28rpx;
-        color: #999;
+        color: #666;
+      }
+
+      &:active {
+        opacity: 0.8;
       }
     }
   }
 
   .menu {
-    margin: 20rpx;
+    margin: 30rpx 20rpx;
     border-radius: 16rpx;
     background-color: #fff;
     overflow: hidden;
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
 
     .menu-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 30rpx;
-      border-bottom: 1rpx solid #eee;
+      padding: 32rpx;
+      border-bottom: 1rpx solid #f5f5f5;
+      transition: all 0.3s;
+
+      &:active {
+        background-color: #f9f9f9;
+      }
 
       &:last-child {
         border-bottom: none;
@@ -330,6 +363,7 @@ onMounted(() => {
           font-size: 40rpx;
           color: #018eff;
           margin-right: 20rpx;
+          opacity: 0.9;
         }
 
         .label {
@@ -340,7 +374,7 @@ onMounted(() => {
 
       .iconfont {
         font-size: 32rpx;
-        color: #999;
+        color: #ccc;
       }
     }
   }
@@ -352,6 +386,13 @@ onMounted(() => {
     color: #f56c6c;
     font-size: 32rpx;
     border-radius: 45rpx;
+    box-shadow: 0 4rpx 12rpx rgba(245, 108, 108, 0.1);
+    transition: all 0.3s;
+
+    &:active {
+      transform: scale(0.98);
+      box-shadow: 0 2rpx 6rpx rgba(245, 108, 108, 0.1);
+    }
   }
 }
 </style>

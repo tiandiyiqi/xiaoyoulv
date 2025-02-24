@@ -121,42 +121,33 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useUserStore } from "@/stores/user";
+import {
+  getResourceById,
+  likeResource,
+  commentResource,
+} from "../../../api/resource";
+import type { Resource } from "../../../api/resource";
 
 // 用户状态管理
 const userStore = useUserStore();
 
 // 资源数据
-const resource = ref({
-  id: "1",
-  nickname: "张三",
-  avatar: "/static/avatar/default.png",
-  createTime: "2024-02-23 14:30",
-  type: "job" as "job" | "project" | "experience" | "document",
-  title: "前端开发工程师",
-  description:
-    "我们正在寻找一位优秀的前端开发工程师加入我们的团队，负责公司核心产品的前端开发工作。",
-  requirement:
-    "1. 熟练掌握 HTML、CSS、JavaScript\n2. 熟悉 Vue3、TypeScript\n3. 有小程序开发经验\n4. 有良好的团队协作能力",
-  budget: "",
-  file: "",
-  fileName: "",
-  fileSize: "",
-  tags: ["前端开发", "Vue3", "TypeScript"],
-  contact: "13800138000",
-  viewCount: 256,
-  likeCount: 32,
-  commentCount: 8,
-  shareCount: 16,
+const resource = ref<Resource>({
+  id: "",
+  nickname: "",
+  avatar: "",
+  createTime: "",
+  type: "job",
+  title: "",
+  description: "",
+  tags: [],
+  contact: "",
+  viewCount: 0,
+  likeCount: 0,
+  commentCount: 0,
+  shareCount: 0,
   isLiked: false,
-  comments: [
-    {
-      id: "1",
-      nickname: "李四",
-      avatar: "/static/avatar/default.png",
-      content: "这个机会不错，请问可以远程工作吗？",
-      createTime: "2024-02-23 14:35",
-    },
-  ],
+  comments: [],
 });
 
 // 评论文本
@@ -168,8 +159,8 @@ const canAction = computed(() => {
 });
 
 // 获取类型文本
-const getTypeText = (type: "job" | "project" | "experience" | "document") => {
-  const typeMap = {
+const getTypeText = (type: Resource["type"]) => {
+  const typeMap: Record<Resource["type"], string> = {
     job: "招聘",
     project: "项目",
     experience: "经验",
@@ -180,7 +171,7 @@ const getTypeText = (type: "job" | "project" | "experience" | "document") => {
 
 // 获取操作文本
 const getActionText = () => {
-  const actionMap = {
+  const actionMap: Record<Resource["type"], string> = {
     job: "投递简历",
     project: "合作洽谈",
     experience: "收藏",
@@ -212,10 +203,19 @@ const handleDownload = () => {
 };
 
 // 点赞
-const handleLike = () => {
-  // TODO: 点赞
-  resource.value.isLiked = !resource.value.isLiked;
-  resource.value.likeCount += resource.value.isLiked ? 1 : -1;
+const handleLike = async () => {
+  try {
+    const { data } = await likeResource(resource.value.id);
+    if (data) {
+      resource.value.isLiked = !resource.value.isLiked;
+      resource.value.likeCount += resource.value.isLiked ? 1 : -1;
+    }
+  } catch (error) {
+    uni.showToast({
+      title: "操作失败",
+      icon: "none",
+    });
+  }
 };
 
 // 评论
@@ -232,19 +232,30 @@ const handleShare = () => {
 };
 
 // 提交评论
-const handleSubmitComment = () => {
+const handleSubmitComment = async () => {
   if (!commentText.value) return;
 
-  // TODO: 提交评论
-  resource.value.comments.unshift({
-    id: String(Date.now()),
-    nickname: userStore.userInfo.nickname,
-    avatar: userStore.userInfo.avatar,
-    content: commentText.value,
-    createTime: new Date().toLocaleString(),
-  });
-  resource.value.commentCount++;
-  commentText.value = "";
+  try {
+    const { data } = await commentResource(
+      resource.value.id,
+      {
+        nickname: userStore.userInfo.nickname,
+        avatar: userStore.userInfo.avatar,
+      },
+      commentText.value
+    );
+
+    if (data) {
+      resource.value.comments.unshift(data);
+      resource.value.commentCount++;
+      commentText.value = "";
+    }
+  } catch (error) {
+    uni.showToast({
+      title: "评论失败",
+      icon: "none",
+    });
+  }
 };
 
 // 操作
@@ -276,8 +287,22 @@ const handleAction = () => {
   }
 };
 
-onMounted(() => {
-  // TODO: 获取资源详情
+onMounted(async () => {
+  const pages = getCurrentPages();
+  const page = pages[pages.length - 1] as any;
+  const id = page.options?.id;
+
+  if (id) {
+    try {
+      const { data } = await getResourceById(id);
+      resource.value = data;
+    } catch (error) {
+      uni.showToast({
+        title: "获取数据失败",
+        icon: "none",
+      });
+    }
+  }
 });
 </script>
 

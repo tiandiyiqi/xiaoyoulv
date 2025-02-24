@@ -12,9 +12,11 @@
     "lib": ["esnext", "dom"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
-    }
+      "@/*": ["src/*"],
+      "mock/*": ["mock/*"]
+    },
+    "types": ["@dcloudio/types", "vite/client", "node"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.uvue"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "mock/**/*.ts", "mock/**/*.d.ts"],
   "exclude": ["node_modules", "dist"]
 } 
